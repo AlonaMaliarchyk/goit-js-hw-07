@@ -1,6 +1,4 @@
 import { galleryItems } from './gallery-items.js';
-//const basicLightbox = require('basiclightbox')
-//import * as basicLightbox from 'basiclightbox'
 
 
 // Change code below this line
@@ -9,21 +7,44 @@ let setImg = [];
 
 for (let img of galleryItems) {
     const galleryItem = document.createElement('div');
-    galleryItem.classList.add("gallery__item", "gallery__link");
+    galleryItem.classList.add("gallery__item");
+    const galleryA = document.createElement('a');
+    galleryA.classList.add("gallery__link");
+    galleryA.setAttribute('href', img.original);
     const imgGallery = document.createElement('img');
     imgGallery.classList.add("gallery__image");
     imgGallery.setAttribute('src', img.preview);
+    imgGallery.setAttribute('data-source', img.original);
     imgGallery.setAttribute('alt', img.description);
     galleryItem.append(imgGallery);
     setImg.push(galleryItem);
 }
 galleryContainer.append(...setImg);
+galleryContainer.addEventListener('click', onImgClick);
 
-const button = document.querySelector('.btn');
-button.addEventListener('click', () => {
-    basicLightbox.create(`
-		<img width="1400" height="900" src="${galleryItems[1].original}">
-	`
-    ).show()
-})
+function onImgClick(event) {
+    event.preventDefault();
+    if (event.target === event.currentTarget)
+        return;
+    
+    function onEscPressedHandler(e) {
+        if (e.code === 'Escape') {
+            lightBox.close();
+        }
+    }
+    
+    const lightBox = basicLightbox.create(
+        `<img src="${event.target.dataset.source}"/>`,
+        {
+            onShow: (lightBox) => {
+                document.addEventListener('keydown', onEscPressedHandler)
+            },
+            onClose: (lightBox) => {
+                document.removeEventListener('keydown', onEscPressedHandler);
+            }
+        }
+    );
 
+    //lightBox.element().children[0].insertAdjacentHTML('afterbegin', `<img src="${event.target.dataset.source}"/>`) 
+    lightBox.show((lightBox) => console.log('finished show()', lightBox));
+};
